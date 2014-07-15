@@ -187,23 +187,17 @@
 };
 
 &cpu0 {
-	pu-supply = <&pu_dummy>; /* use pu_dummy if VDDSOC share with VDDPU */
+        arm-supply = <&reg_arm>;
+        soc-supply = <&reg_soc>;
+        pu-supply = <&reg_pu>; /* use pu_dummy if VDDSOC share with VDDPU */
 };
 
-&ecspi1 {
-	fsl,spi-num-chipselects = <1>;
-	cs-gpios = <&gpio4 9 0>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_ecspi1_2>;
-	status = "okay";
+&gpu {
+        pu-supply = <&reg_pu>; /* ldo-bypass:use pu_dummy if VDDSOC share with VDDPU */
+};
 
-	flash: m25p80@0 {
-		#address-cells = <1>;
-		#size-cells = <1>;
-		compatible = "st,m25p32";
-		spi-max-frequency = <20000000>;
-		reg = <0>;
-	};
+&vpu {
+        pu-supply = <&reg_pu>; /* ldo-bypass:use pu_dummy if VDDSOC share with VDDPU */
 };
 
 &gpc {
@@ -211,13 +205,9 @@
 	fsl,cpu_pupscr_sw = <0xf>;
 	fsl,cpu_pdnscr_iso2sw = <0x1>;
 	fsl,cpu_pdnscr_iso = <0x1>;
-	fsl,ldo-bypass = <1>; /* use ldo-bypass, u-boot will check it and configure */
-	fsl,wdog-reset = <2>; /* watchdog select of reset source */
-	pu-supply = <&pu_dummy>; /* ldo-bypass:use pu_dummy if VDDSOC share with VDDPU */
-};
-
-&gpu {
-	pu-supply = <&pu_dummy>; /* ldo-bypass:use pu_dummy if VDDSOC share with VDDPU */
+	fsl,ldo-bypass = <0>; /* use ldo-bypass, u-boot will check it and configure */
+	fsl,wdog-reset = <1>; /* watchdog select of reset source */
+	pu-supply = <&reg_pu>; /* ldo-bypass:use pu_dummy if VDDSOC share with VDDPU */
 };
 
 &hdmi_audio {
@@ -302,7 +292,6 @@
 				MX6QDL_PAD_EIM_A25__GPIO5_IO02 0x80000000
 				MX6QDL_PAD_EIM_D23__GPIO3_IO23 0x80000000
 				MX6QDL_PAD_EIM_D22__GPIO3_IO22  0x80000000
-				MX6QDL_PAD_EIM_EB3__GPIO2_IO31 0x80000000
 				MX6QDL_PAD_EIM_D16__GPIO3_IO16 0x80000000
 				MX6QDL_PAD_EIM_DA9__GPIO3_IO09 0x80000000
 				MX6QDL_PAD_GPIO_4__GPIO1_IO04 0x80000000
@@ -345,8 +334,7 @@
 };
 
 &pcie {
-	power-on-gpio = <&gpio3 19 0>;
-	reset-gpio = <&gpio7 12 0>;
+	power-on-gpio = <&gpio5 20 0>;
 	status = "okay";
 };
 
@@ -366,6 +354,27 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart1_1>;
 	status = "okay";
+};
+
+&uart2 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_uart2_3>;
+	pinctrl-assert-gpios = <&gpio2 13 GPIO_ACTIVE_HIGH>,
+			       <&gpio2 14 GPIO_ACTIVE_HIGH>;
+	fsl,uart-has-rtscts;
+        status = "okay";
+};
+
+&uart3 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_uart3_2>;
+        status = "okay";
+};
+
+&uart4 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_uart4_1>;
+        status = "okay";
 };
 
 &usbh1 {
@@ -401,20 +410,6 @@
 	keep-power-in-suspend;
 	enable-sdio-wakeup;
 	status = "okay";
-};
-
-&usdhc4 {
-        pinctrl-names = "default";
-        pinctrl-0 = <&pinctrl_usdhc4_1>;
-        bus-width = <8>;
-        non-removable;
-        no-1-8-v;
-	keep-power-in-suspend;
-        status = "okay";
-};
-
-&vpu {
-	pu-supply = <&pu_dummy>; /* ldo-bypass:use pu_dummy if VDDSOC share with VDDPU */
 };
 
 &epdc {
