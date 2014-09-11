@@ -257,25 +257,34 @@
         pinctrl-0 = <&pinctrl_i2c3_1>;
         status = "okay";
 
-	adv7180: adv7180@20 {
-		compatible = "adv,adv7180";
-		reg = <0x20>;
+//	adv7180: adv7180@20 {
+//		compatible = "adv,adv7180";
+//		reg = <0x20>;
+//		pinctrl-names = "default";
+//		pinctrl-0 = <&pinctrl_ipu1_4>;
+//		clocks = <&clks 201>;
+//		clock-names = "csi_mclk";
+//		DOVDD-supply = <&reg_3p3v>; /* 3.3v, enabled via 2.8 VGEN6 */
+//		AVDD-supply = <&reg_1p8v>;  /* 1.8v */
+//		DVDD-supply = <&reg_1p8v>;  /* 1.8v */
+//		PVDD-supply = <&reg_1p8v>;  /* 1.8v */
+//		pwn-gpios = <&gpio1 17 0>;
+//		csi_id = <0>;
+//		mclk = <24000000>;
+//		mclk_source = <0>;
+//		ipu_id = <0>;
+//		cvbs = <1>;
+//	};
+
+	adv7610: adv7610@4C {
+		compatible = "adv,adv7610";
+		reg = <0x4C>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_ipu1_4>;
-		clocks = <&clks 201>;
-		clock-names = "csi_mclk";
-		DOVDD-supply = <&reg_3p3v>; /* 3.3v, enabled via 2.8 VGEN6 */
-		AVDD-supply = <&reg_1p8v>;  /* 1.8v */
-		DVDD-supply = <&reg_1p8v>;  /* 1.8v */
-		PVDD-supply = <&reg_1p8v>;  /* 1.8v */
-		pwn-gpios = <&gpio1 17 0>;
 		csi_id = <0>;
-		mclk = <24000000>;
-		mclk_source = <0>;
 		ipu_id = <0>;
-		cvbs = <1>;
 	};
-	
+
 };
 
 &iomuxc {
