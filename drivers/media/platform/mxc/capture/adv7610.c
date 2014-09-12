@@ -93,35 +93,42 @@ static inline int adv7610_read(struct i2c_client *client, u8 reg);
 //Get the video output format from the ADV7610
 int adv7610_get_vidout_fmt(adv7610_vidout_fmt_t *fmt)
 {
-	int val, width, height;
+	int ch1Fcl;
 
-	//Pull data from the i2c here to determine the format.
+	//Determine if there is an HDMI input, if so read the current format
+	if(adv7610_read(adv7610_i2c_clients.io, 0x6F) & 0x01)
+	{
+		pr_debug("ADV7610 HDMI cable detected\n");
 
-	//Read the line width
-	val = adv7610_read(adv7610_i2c_clients.hdmi, 0x07);
-	width = (val & 0x1F) << 8;
-	val = adv7610_read(adv7610_i2c_clients.hdmi, 0x08);
-	width |= val;
-	fmt->width = width;
+		//Pull data from the i2c here to determine the format.
+		//Read the line width
+		while(!(adv7610_read(adv7610_i2c_clients.io, 0x6A) & 0x01)){}  //wait for the DE Regen filter to lock
+		while(!(adv7610_read(adv7610_i2c_clients.io, 0x6A) & 0x02)){}  //wait for the vert filter to lock
+		msleep(300);	//wait 300ms for some reason before the values are good...
+		fmt->width = (adv7610_read(adv7610_i2c_clients.hdmi, 0x07) & 0x1F) << 8;
+		fmt->width |= adv7610_read(adv7610_i2c_clients.hdmi, 0x08);
 
-	//read the field height
-	val = adv7610_read(adv7610_i2c_clients.hdmi, 0x09);
-	height = (val & 0x1F) << 8;
-	val = adv7610_read(adv7610_i2c_clients.hdmi, 0x0A);
-	height |= val;
-	fmt->height = height;
+		//read the field height
+		fmt->height = (adv7610_read(adv7610_i2c_clients.hdmi, 0x09) & 0x1F) << 8;
+		fmt->height |= adv7610_read(adv7610_i2c_clients.hdmi, 0x0A);
 
-	//Determine if its interlaced
-	val = adv7610_read(adv7610_i2c_clients.hdmi, 0x0B);
-	fmt->interlaced = (bool)(val & 0x20);
+		//Determine if its interlaced
+		fmt->interlaced = (bool)(adv7610_read(adv7610_i2c_clients.hdmi, 0x0B) & 0x20);
 
-	//Fixed 30fps for now
-	fmt->fps=30;
-
-	//Not quite working yet...
-	fmt->width = 1280;
-	fmt->height = 720;
-	fmt->interlaced = false;
+		//Fps comes from the CH1_FCL
+		while(!(adv7610_read(adv7610_i2c_clients.cp, 0xB1) & 0x80)){}  //wait for the CH1_STDI_DVALID to be high
+		ch1Fcl = (adv7610_read(adv7610_i2c_clients.cp, 0xB8) & 0x1F) << 8;
+		ch1Fcl |= adv7610_read(adv7610_i2c_clients.cp, 0xB9); 
+		fmt->fps = ((111861  + (ch1Fcl - 1))/ ch1Fcl);	//A little integer division rounding
+	}
+	else
+	{
+		//Use default values
+		fmt->width = 1280;
+		fmt->height = 720;
+		fmt->interlaced = false;
+		fmt->fps = 60;
+	}
 
 	pr_debug("ADV7610 returned %ix%i%s@%i\n",
 		fmt->width, fmt->height,
@@ -410,7 +417,7 @@ static inline int adv7610_read(struct i2c_client *client, u8 reg)
         return val;
 }
 
-static int edid[256] = {
+static const int edid[256] = {
 	0x0,	0xFF,	0xFF,	0xFF,	0xFF,	0xFF,	0xFF,	0x0,	0x6,	0x8F,	0x7,	0x11,
 	0x1,	0x0,	0x0,	0x0,	0x17,	0x11,	0x1,	0x3,	0x80,	0x0C,	0x9,	0x78,
 	0x0A,	0x1E,	0xAC,	0x98,	0x59,	0x56,	0x85,	0x28,	0x29,	0x52,	0x57,	0x0,
@@ -487,23 +494,20 @@ static int adv7610_hw_init(struct i2c_client *client)
 	adv7610_write(adv7610_i2c_clients.ksv, 0x53, 0x00); //Set the SPA for port B.
 	adv7610_write(adv7610_i2c_clients.ksv, 0x70, 0x9E); //Set the Least Significant Byte of the SPA location
 	adv7610_write(adv7610_i2c_clients.ksv, 0x74, 0x03); //Enable the Internal EDID for Ports
+	
+	adv7610_write(adv7610_i2c_clients.hdmi, 0x00, 0x00); //Select port A (shouldn't matter, only 1 port)
 
         adv7610_write(adv7610_i2c_clients.io, 0x03, 0x00);// 8-bit SDR ITU-656 mode
-
-        //adv7610_write(adv7610_i2c_clients.io, 0x06, 0xA7); // Invert VS + HS + CLK
-        adv7610_write(adv7610_i2c_clients.io, 0x06, 0xA1); // Invert CLK
-        //adv7610_write(adv7610_i2c_clients.io, 0x06, 0xAF); // Invert everything
-        //adv7610_write(adv7610_i2c_clients.io, 0x06, 0xA6); // Invert VS + HS
-
         adv7610_write(adv7610_i2c_clients.io, 0x19, 0xC0);// Enable LLC DLL, double clock
         adv7610_write(adv7610_i2c_clients.io, 0x33, 0x40);// Enable LLC_DLL_MUX
-        adv7610_write(adv7610_i2c_clients.cp, 0xBA, 0x01); //Set HDMI FreeRun
+        adv7610_write(adv7610_i2c_clients.io, 0x06, 0xA1); // Invert CLK
 	adv7610_write(adv7610_i2c_clients.io, 0x14, 0x7F); //Max Drive Strength
+
+        adv7610_write(adv7610_i2c_clients.cp, 0xBA, 0x01); //Set HDMI FreeRun
 
         adv7610_write(adv7610_i2c_clients.io, 0x0B, 0x44);// Power up part
         adv7610_write(adv7610_i2c_clients.io, 0x0c, 0x42); //Power up part
-        adv7610_write(adv7610_i2c_clients.io, 0x15, 0xB8); // Disable Tristate of clock and data only
-        //adv7610_write(adv7610_i2c_clients.io, 0x15, 0xB0); // Disable Tristate of video and clock pins
+        adv7610_write(adv7610_i2c_clients.io, 0x15, 0xB8); // Disable Tristate of clock and data 
 
 	adv7610_write(adv7610_i2c_clients.ksv, 0x40, 0x81); // Disable HDCP 1.1 features
 	adv7610_write(adv7610_i2c_clients.hdmi, 0x9B, 0x03); // ADI recommended setting
