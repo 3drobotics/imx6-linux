@@ -81,7 +81,7 @@ struct adv7610_i2c_map {
 	struct  i2c_client *cp;
 };
 
-static struct adv7610_i2c_map adv7610_i2c_clients;
+static struct adv7610_i2c_map adv7610_i2c_clients = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 
 static int adv7610_write(struct i2c_client *client, u8 reg, u8 val);
 static inline int adv7610_read(struct i2c_client *client, u8 reg);
@@ -268,16 +268,12 @@ static int ioctl_g_fmt_cap(struct v4l2_int_device *s, struct v4l2_format *f)
 	if (adv7610_get_vidout_fmt(&fmt))
 		return -ENODEV;
 
-	pr_debug("%s: %dx%d%c@%dfps\n", __func__, fmt.width, fmt.height,
-		fmt.interlaced?'i':'p', fmt.fps);
 	sensor->sen.pix.height = fmt.height;
 	sensor->sen.pix.width = fmt.width;
 	sensor->sen.streamcap.timeperframe.denominator = fmt.fps;
 	sensor->sen.streamcap.timeperframe.numerator = 1;
 	switch (f->type) {
 	case V4L2_BUF_TYPE_VIDEO_CAPTURE:
-		pr_debug("   Returning size of %dx%d\n",
-			 sensor->sen.pix.width, sensor->sen.pix.height);
 		f->fmt.pix = sensor->sen.pix;
 		break;
 
@@ -313,8 +309,6 @@ static int ioctl_enum_framesizes(struct v4l2_int_device *s,
 	if (adv7610_get_vidout_fmt(&fmt))
 		return -ENODEV;
 
-	pr_debug("%s: %dx%d%c@%dfps\n", __func__, fmt.width, fmt.height,
-		fmt.interlaced?'i':'p', fmt.fps);
 	sensor->sen.pix.height = fmt.height;
 	sensor->sen.pix.width = fmt.width;
 	fsize->discrete.width = sensor->sen.pix.width;
@@ -634,13 +628,20 @@ static __init int adv7610_init(void)
  */
 static void __exit adv7610_clean(void)
 {
-        i2c_unregister_device(adv7610_i2c_clients.infoframe);
-        i2c_unregister_device(adv7610_i2c_clients.cec);
-        i2c_unregister_device(adv7610_i2c_clients.dpll);
-        i2c_unregister_device(adv7610_i2c_clients.ksv);
-        i2c_unregister_device(adv7610_i2c_clients.edid);
-        i2c_unregister_device(adv7610_i2c_clients.hdmi);
-        i2c_unregister_device(adv7610_i2c_clients.cp);
+	if (adv7610_i2c_clients.infoframe != NULL)
+		i2c_unregister_device(adv7610_i2c_clients.infoframe);
+	if (adv7610_i2c_clients.cec != NULL)
+		i2c_unregister_device(adv7610_i2c_clients.cec);
+	if (adv7610_i2c_clients.dpll != NULL)
+		i2c_unregister_device(adv7610_i2c_clients.dpll);
+	if (adv7610_i2c_clients.ksv != NULL)
+		i2c_unregister_device(adv7610_i2c_clients.ksv);
+	if (adv7610_i2c_clients.edid != NULL)
+		i2c_unregister_device(adv7610_i2c_clients.edid);
+	if (adv7610_i2c_clients.hdmi != NULL)
+		i2c_unregister_device(adv7610_i2c_clients.hdmi);
+	if (adv7610_i2c_clients.cp != NULL)
+		i2c_unregister_device(adv7610_i2c_clients.cp);
 
 	i2c_del_driver(&adv7610_i2c_driver);
 }
