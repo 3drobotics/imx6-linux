@@ -38,6 +38,7 @@
 #include <linux/videodev2.h>
 #include <linux/workqueue.h>
 #include <linux/i2c.h>
+#include <linux/time.h>
 
 #include <media/v4l2-chip-ident.h>
 #include <media/v4l2-int-device.h>
@@ -61,6 +62,7 @@ typedef struct {
 
 #define ADV7610_CHIP_ID_HIGH_BYTE	0xEA
 #define ADV7610_CHIP_ID_LOW_BYTE	0xEB
+#define MAX_LOCK_TRIES 1000
 
 #define CEC_MAP_ADDR 		0x80
 #define INFOFRAME_MAP_ADDR 	0x7C
@@ -83,17 +85,18 @@ struct adv7610_i2c_map {
 
 static struct adv7610_i2c_map adv7610_i2c_clients = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 
+wait_queue_head_t i2c_wait;
+
 static int adv7610_write(struct i2c_client *client, u8 reg, u8 val);
 static inline int adv7610_read(struct i2c_client *client, u8 reg);
 
 /***********************************************************************
  * mxc_v4l2_capture interface.
  ***********************************************************************/
-
 //Get the video output format from the ADV7610
 int adv7610_get_vidout_fmt(adv7610_vidout_fmt_t *fmt)
 {
-	int ch1Fcl;
+	int ch1Fcl, count;
 
 	//Determine if there is an HDMI input, if so read the current format
 	if(adv7610_read(adv7610_i2c_clients.io, 0x6F) & 0x01)
@@ -102,8 +105,18 @@ int adv7610_get_vidout_fmt(adv7610_vidout_fmt_t *fmt)
 
 		//Pull data from the i2c here to determine the format.
 		//Read the line width
-		while(!(adv7610_read(adv7610_i2c_clients.io, 0x6A) & 0x01)){}  //wait for the DE Regen filter to lock
-		while(!(adv7610_read(adv7610_i2c_clients.io, 0x6A) & 0x02)){}  //wait for the vert filter to lock
+		count = 0;
+		while(!(adv7610_read(adv7610_i2c_clients.io, 0x6A) & 0x01)){
+			if(++count > MAX_LOCK_TRIES)
+				goto default_exit;
+		}  //wait for the DE Regen filter to lock
+		
+		count = 0;
+		while(!(adv7610_read(adv7610_i2c_clients.io, 0x6A) & 0x02)){
+			if(++count > MAX_LOCK_TRIES)
+				goto default_exit; 
+		}  //wait for the vert filter to lock
+	
 		msleep(300);	//wait 300ms for some reason before the values are good...
 		fmt->width = (adv7610_read(adv7610_i2c_clients.hdmi, 0x07) & 0x1F) << 8;
 		fmt->width |= adv7610_read(adv7610_i2c_clients.hdmi, 0x08);
@@ -116,19 +129,29 @@ int adv7610_get_vidout_fmt(adv7610_vidout_fmt_t *fmt)
 		fmt->interlaced = (bool)(adv7610_read(adv7610_i2c_clients.hdmi, 0x0B) & 0x20);
 
 		//Fps comes from the CH1_FCL
-		while(!(adv7610_read(adv7610_i2c_clients.cp, 0xB1) & 0x80)){}  //wait for the CH1_STDI_DVALID to be high
+		count = 0;
+		while(!(adv7610_read(adv7610_i2c_clients.cp, 0xB1) & 0x80)){
+			if(++count > MAX_LOCK_TRIES)
+				goto default_exit; 
+
+		}  //wait for the CH1_STDI_DVALID to be high
+
 		ch1Fcl = (adv7610_read(adv7610_i2c_clients.cp, 0xB8) & 0x1F) << 8;
 		ch1Fcl |= adv7610_read(adv7610_i2c_clients.cp, 0xB9); 
 		fmt->fps = ((111861  + (ch1Fcl - 1))/ ch1Fcl);	//A little integer division rounding
 	}
 	else
 	{
+		pr_debug("ADV7610 no HDMI cable detected\n");
+default_exit:
+		pr_debug("ADV7610 returning default resolution\n");
 		//Use default values
 		fmt->width = 1280;
 		fmt->height = 720;
 		fmt->interlaced = false;
 		fmt->fps = 60;
 	}
+	
 
 	pr_debug("ADV7610 returned %ix%i%s@%i\n",
 		fmt->width, fmt->height,
@@ -543,6 +566,8 @@ static int adv7610_video_probe(struct i2c_client *client,
 	int ret;
 
 	dev_dbg(dev, "%s\n", __func__);
+
+	init_waitqueue_head(&i2c_wait);
 
 	/* Set initial values for the sensor struct. */
 	memset(sens, 0, sizeof(adv7610_data));
