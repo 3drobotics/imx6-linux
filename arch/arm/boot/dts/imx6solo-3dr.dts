@@ -373,10 +373,11 @@
 
 &uart2 {
         pinctrl-names = "default";
-        pinctrl-0 = <&pinctrl_uart2_4>;
+        //pinctrl-0 = <&pinctrl_uart2_4>;
+        pinctrl-0 = <&pinctrl_uart2_3>; //RTS and CTS
 	//pinctrl-assert-gpios = <&gpio2 13 GPIO_ACTIVE_HIGH>,
 	//		       <&gpio2 14 GPIO_ACTIVE_HIGH>;
-	//fsl,uart-has-rtscts;
+	fsl,uart-has-rtscts;
         status = "okay";
 };
 
