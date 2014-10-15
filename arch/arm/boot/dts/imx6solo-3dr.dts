@@ -346,7 +346,8 @@
 };
 
 &pcie {
-	power-on-gpio = <&gpio5 20 0>;
+	//power-on-gpio = <&gpio5 20 0>;
+	reset-gpio = <&gpio5 2 0>;
 	status = "okay";
 };
 
