@@ -506,8 +506,12 @@ static int adv7610_hw_init(struct i2c_client *client)
         adv7610_i2c_clients.hdmi= 	i2c_new_dummy(client->adapter, HDMI_MAP_ADDR >> 1);
         adv7610_i2c_clients.cp = 	i2c_new_dummy(client->adapter, CP_MAP_ADDR >> 1);
 
+	//Set the AUTO_EDID to turn on when the internal EDID is enabled
+	adv7610_write(adv7610_i2c_clients.hdmi, 0x6C, 0xA0);
+
 	adv7610_write(adv7610_i2c_clients.ksv, 0x77, 0x00); //Disable the Internal EDID
 
+	//Set the EDID value
 	for(i=0; i<=0xFF; ++i)
 		adv7610_write(adv7610_i2c_clients.edid,i,edid[i]);
 
@@ -559,7 +563,7 @@ static int adv7610_hw_init(struct i2c_client *client)
 
 	adv7610_write(adv7610_i2c_clients.io, 0x01, 0x25);   //30fps, HDMI COMP
 	adv7610_write(adv7610_i2c_clients.io, 0x00, 0x13);   //720p
-	
+
 	return 0;
 }
 
