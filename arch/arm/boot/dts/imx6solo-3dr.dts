@@ -29,11 +29,12 @@
 
 	leds {
 		compatible = "gpio-leds";
-
-		led1: user2 { /* MX6_PANLEDR */
+		
+		led1: user2 {
 			label = "user2";
 			gpios = <&gpio1 2 GPIO_ACTIVE_HIGH>;
 			default-state = "off";
+			linux,default-trigger = "phy0assoc";
 		};
 	};
 
