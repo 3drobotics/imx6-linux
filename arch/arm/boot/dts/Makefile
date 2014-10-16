@@ -138,6 +138,7 @@ dtb-$(CONFIG_ARCH_MXC) += \
 	imx6sl-evk-pf200.dtb \
         imx6solo-3dr.dtb \
         imx6solo-3dr-analogtvin.dtb \
+        imx6solo-3dr-artoo.dtb \
 	vf610-twr.dtb
 dtb-$(CONFIG_ARCH_MXS) += imx23-evk.dtb \
 	imx23-olinuxino.dtb \
