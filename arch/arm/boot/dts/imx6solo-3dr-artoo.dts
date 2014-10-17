@@ -319,8 +319,6 @@
 				MX6QDL_PAD_GPIO_2__GPIO1_IO02 0x80000000
 				MX6QDL_PAD_NANDF_CS3__GPIO6_IO16 0x80000000
 				MX6QDL_PAD_NANDF_WP_B__GPIO6_IO09 0x80000000	
-				MX6QDL_PAD_SD4_DAT5__GPIO2_IO13 0x80000000
-				MX6QDL_PAD_SD4_DAT6__GPIO2_IO14 0x80000000
 			>;
 		};
 	};
@@ -379,11 +377,7 @@
 
 &uart2 {
         pinctrl-names = "default";
-        pinctrl-0 = <&pinctrl_uart2_4>;
-        //pinctrl-0 = <&pinctrl_uart2_3>; //RTS and CTS
-	pinctrl-assert-gpios = <&gpio2 13 GPIO_ACTIVE_LOW>,
-			       <&gpio2 14 GPIO_ACTIVE_LOW>;
-	//fsl,uart-has-rtscts;
+        pinctrl-0 = <&pinctrl_uart2_5>; //RTS and CTS are GPIOs
         status = "okay";
 };
 
