@@ -29,11 +29,12 @@
 
 	leds {
 		compatible = "gpio-leds";
-
-		led1: user2 { /* MX6_PANLEDR */
+		
+		led1: user2 {
 			label = "user2";
 			gpios = <&gpio1 2 GPIO_ACTIVE_HIGH>;
 			default-state = "off";
+			linux,default-trigger = "phy0assoc";
 		};
 	};
 
@@ -94,6 +95,12 @@
 
 	gpio-keys {
 		compatible = "gpio-keys";
+		
+		wps-pairing {
+			label = "WPS Button";
+			gpios = <&gpio4 5 GPIO_ACTIVE_LOW>;
+			linux,code = <0x211>; //KEY_WPS_BUTTON
+		};
 	};
 
 	sound-hdmi {
@@ -336,7 +343,8 @@
 };
 
 &pcie {
-	power-on-gpio = <&gpio5 20 0>;
+	//power-on-gpio = <&gpio5 20 0>;
+	reset-gpio = <&gpio5 2 0>;
 	status = "okay";
 };
 
