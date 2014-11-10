@@ -24,7 +24,7 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  */
-
+#define DEBUG
 #include <linux/module.h>
 #include <media/v4l2-common.h>
 #include <media/v4l2-event.h>
@@ -332,6 +332,9 @@ static int tw68_set_scale(struct tw68_dev *dev, unsigned int width,
 	tw_writeb(TW68_SCALE_HI, comb);
 	tw_writeb(TW68_VSCALE_LO, vscale);
 	tw_writeb(TW68_HSCALE_LO, hscale);
+
+	/* set the vdrop for 30fps */
+        //tw_writel(0x04C, 0x0101);
 
 	return 0;
 }
@@ -762,6 +765,8 @@ static int tw68_s_std(struct file *file, void *priv, v4l2_std_id id)
 	struct tw68_dev *dev = video_drvdata(file);
 	unsigned int i;
 
+	pr_info("In tw68_s_std");
+
 	if (vb2_is_busy(&dev->vidq))
 		return -EBUSY;
 
@@ -981,7 +986,7 @@ int tw68_video_init2(struct tw68_dev *dev, int video_nr)
 
 	INIT_LIST_HEAD(&dev->active);
 	dev->vidq.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-//	dev->vidq.timestamp_flags = V4L2_BUF_FLAG_TIMESTAMP_MONOTONIC;
+	dev->vidq.timestamp_type = V4L2_BUF_FLAG_TIMESTAMP_MONOTONIC;
 	dev->vidq.io_modes = VB2_MMAP | VB2_USERPTR | VB2_READ | VB2_DMABUF;
 	dev->vidq.ops = &tw68_video_qops;
 	dev->vidq.mem_ops = &vb2_dma_sg_memops;

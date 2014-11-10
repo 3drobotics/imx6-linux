@@ -30,12 +30,13 @@
 	leds {
 		compatible = "gpio-leds";
 		
-		led1: user2 {
+/*		led1: user2 {
 			label = "user2";
 			gpios = <&gpio1 2 GPIO_ACTIVE_HIGH>;
 			default-state = "off";
 			linux,default-trigger = "phy0assoc";
 		};
+*/
 	};
 
 	regulators {
@@ -92,7 +93,7 @@
 			enable-active-high;
 		};
 	};
-
+/*
 	gpio-keys {
 		compatible = "gpio-keys";
 		
@@ -102,7 +103,7 @@
 			linux,code = <0x211>; //KEY_WPS_BUTTON
 		};
 	};
-
+*/
 	sound-hdmi {
 		compatible = "fsl,imx6q-audio-hdmi",
 			     "fsl,imx-audio-hdmi";
@@ -152,16 +153,6 @@
 		int_clk = <0>;
 		late_init = <0>;
 		status = "disabled";
-	};
-
-	lcd@0 {
-		compatible = "fsl,lcd";
-		ipu_id = <0>;
-		disp_id = <0>;
-		default_ifmt = "RGB565";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_ipu1_1>;
-		status = "okay";
 	};
 
 	v4l2_cap_0 {
@@ -283,14 +274,14 @@
 //		cvbs = <1>;
 //	};
 
-	adv7610: adv7610@4C {
-		compatible = "adv,adv7610";
-		reg = <0x4C>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_ipu1_4>;
-		csi_id = <0>;
-		ipu_id = <0>;
-	};
+//	adv7610: adv7610@4C {
+//		compatible = "adv,adv7610";
+//		reg = <0x4C>;
+//		pinctrl-names = "default";
+//		pinctrl-0 = <&pinctrl_ipu1_4>;
+//		csi_id = <0>;
+//		ipu_id = <0>;
+//	};
 
 };
 
@@ -367,6 +358,37 @@
 &ssi2 {
 	fsl,mode = "i2s-slave";
 	status = "okay";
+};
+
+&ecspi3 {
+        //fsl,spi-num-chipselects = <1>;
+        //cs-gpios = <&gpio2 20 0>;
+        fsl,spi-num-chipselects = <4>;
+        cs-gpios = <&gpio4 24 0>,<&gpio4 26 0>,<&gpio6 16 0>,<&gpio6 9 0>;
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_ecspi3_1>;
+        status = "okay";
+
+	spidev@0 {
+		compatible = "spidev";
+		spi-max-frequency = <20000000>;
+		reg = <0>;
+	};
+	spidev@1 {
+		compatible = "spidev";
+		spi-max-frequency = <20000000>;
+		reg = <1>;
+	};
+	spidev@2 {
+		compatible = "spidev";
+		spi-max-frequency = <20000000>;
+		reg = <2>;
+	};
+	spidev@3 {
+		compatible = "spidev";
+		spi-max-frequency = <20000000>;
+		reg = <3>;
+	};
 };
 
 &uart1 {
