@@ -1103,6 +1103,13 @@
 				MX6QDL_PAD_DISP0_DAT0__ECSPI3_SCLK 0x100b1
 			>;
 		};
+		pinctrl_ecspi3_2: ecspi3grp-2 {
+			fsl,pins = <
+				MX6QDL_PAD_DISP0_DAT2__ECSPI3_MISO 0x10078//0x100b1
+				MX6QDL_PAD_DISP0_DAT1__ECSPI3_MOSI 0x10078//0x100b1
+				MX6QDL_PAD_DISP0_DAT0__ECSPI3_SCLK 0x10078//0x100b1
+			>;
+		};
 	};
 
 	enet {
