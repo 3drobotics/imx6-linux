@@ -398,7 +398,7 @@
         fsl,spi-num-chipselects = <1>;
         cs-gpios = <&gpio2 20 0>; //Bogus chip select`
         pinctrl-names = "default";
-        pinctrl-0 = <&pinctrl_ecspi3_2>;
+        pinctrl-0 = <&pinctrl_ecspi3_1>;
         status = "okay";
 
 	spidev@0 {
