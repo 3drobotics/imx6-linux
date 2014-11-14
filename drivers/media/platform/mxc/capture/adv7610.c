@@ -38,6 +38,7 @@
 #include <linux/videodev2.h>
 #include <linux/workqueue.h>
 #include <linux/i2c.h>
+#include <linux/of_gpio.h>
 #include <linux/time.h>
 
 #include <media/v4l2-chip-ident.h>
@@ -48,6 +49,8 @@
 /*!
  * Maintains the information on the current state of the sensor.
  */
+static int rst_gpio;
+
 struct sensor {
 	struct sensor_data sen;
 } adv7610_data;
@@ -172,6 +175,21 @@ default_exit:
 
 	return 0;
 }
+
+static void adv7610_hard_reset(void)
+{
+	pr_debug("ADV7610 hard reset\n");
+
+        /* camera reset */
+        gpio_set_value(rst_gpio, 1);
+
+        gpio_set_value(rst_gpio, 0);
+        msleep(1);
+
+        gpio_set_value(rst_gpio, 1);
+        msleep(5);
+}
+
 
 /***********************************************************************
  * IOCTL Functions from v4l2_int_ioctl_desc.
@@ -482,8 +500,10 @@ static int adv7610_hw_init(struct i2c_client *client)
 
 	dev_dbg(&client->dev,
                 "In adv7610:adv7610_hw_init\n");
+
+	adv7610_hard_reset(); //Hardware reset first
  
-        adv7610_write(client, 0xFF, 0x80); //Perform a reset.
+        adv7610_write(client, 0xFF, 0x80); //Perform a software reset.
         msleep(100);
 
 	//Set up the map addresses
@@ -586,6 +606,17 @@ static int adv7610_video_probe(struct i2c_client *client,
 	sens->sen.pix.height = 0;
 	sens->sen.pix.pixelformat = V4L2_PIX_FMT_UYVY;  /* YUV422 */
 	sens->sen.on = true;
+
+        /* request reset pin */
+        rst_gpio = of_get_named_gpio(dev->of_node, "reset-gpio", 0);
+        if (!gpio_is_valid(rst_gpio)) {
+                dev_warn(dev, "no sensor reset pin available");
+                return -EINVAL;
+        }
+        ret = devm_gpio_request_one(dev, rst_gpio, GPIOF_OUT_INIT_HIGH,
+                                        "adv7610_reset");
+        if (ret < 0)
+                return ret;
 
 	ret = of_property_read_u32(dev->of_node, "csi_id",
 				   &(sens->sen.csi));
