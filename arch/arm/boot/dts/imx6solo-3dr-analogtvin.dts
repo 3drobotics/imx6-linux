@@ -30,12 +30,13 @@
 	leds {
 		compatible = "gpio-leds";
 		
-		led1: user2 {
+/*		led1: user2 {
 			label = "user2";
 			gpios = <&gpio1 2 GPIO_ACTIVE_HIGH>;
 			default-state = "off";
 			linux,default-trigger = "phy0assoc";
 		};
+*/
 	};
 
 	regulators {
@@ -92,7 +93,7 @@
 			enable-active-high;
 		};
 	};
-
+/*
 	gpio-keys {
 		compatible = "gpio-keys";
 		
@@ -102,7 +103,7 @@
 			linux,code = <0x211>; //KEY_WPS_BUTTON
 		};
 	};
-
+*/
 	sound-hdmi {
 		compatible = "fsl,imx6q-audio-hdmi",
 			     "fsl,imx-audio-hdmi";
@@ -152,16 +153,6 @@
 		int_clk = <0>;
 		late_init = <0>;
 		status = "disabled";
-	};
-
-	lcd@0 {
-		compatible = "fsl,lcd";
-		ipu_id = <0>;
-		disp_id = <0>;
-		default_ifmt = "RGB565";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_ipu1_1>;
-		status = "okay";
 	};
 
 	v4l2_cap_0 {
@@ -308,8 +299,11 @@
 				MX6QDL_PAD_GPIO_9__GPIO1_IO09 0x80000000
 				MX6QDL_PAD_GPIO_1__WDOG2_B 0x80000000
 				MX6QDL_PAD_GPIO_2__GPIO1_IO02 0x80000000
-				MX6QDL_PAD_NANDF_CS3__GPIO6_IO16 0x80000000
-				MX6QDL_PAD_NANDF_WP_B__GPIO6_IO09 0x80000000	
+                                //SPI CS GPIO pins
+				MX6QDL_PAD_NANDF_CS3__GPIO6_IO16 0x10078
+				MX6QDL_PAD_NANDF_WP_B__GPIO6_IO09 0x10078	
+				MX6QDL_PAD_DISP0_DAT3__GPIO4_IO24 0x10078
+				MX6QDL_PAD_DISP0_DAT5__GPIO4_IO26 0x10078
 			>;
 		};
 	};
@@ -358,6 +352,20 @@
 &ssi2 {
 	fsl,mode = "i2s-slave";
 	status = "okay";
+};
+
+&ecspi3 {
+        fsl,spi-num-chipselects = <1>;
+        cs-gpios = <&gpio2 20 0>; //Bogus chip select`
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_ecspi3_1>;
+        status = "okay";
+
+	spidev@0 {
+		compatible = "spidev";
+		spi-max-frequency = <20000000>;
+		reg = <0>;
+	};
 };
 
 &uart1 {
