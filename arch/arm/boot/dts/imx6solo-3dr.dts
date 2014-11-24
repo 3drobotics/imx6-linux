@@ -26,18 +26,19 @@
 	memory {
 		reg = <0x10000000 0x40000000>;
 	};
-
+/*
 	leds {
 		compatible = "gpio-leds";
 		
-/*		led1: user2 {
+		led1: user2 {
 			label = "user2";
 			gpios = <&gpio1 2 GPIO_ACTIVE_HIGH>;
 			default-state = "off";
 			linux,default-trigger = "phy0assoc";
 		};
-*/
+
 	};
+*/
 
 	regulators {
 		compatible = "simple-bus";
@@ -231,7 +232,7 @@
 };
 
 &i2c1 {
-	clock-frequency = <100000>;
+	clock-frequency = <400000>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_i2c1_2>;
 	status = "okay";
