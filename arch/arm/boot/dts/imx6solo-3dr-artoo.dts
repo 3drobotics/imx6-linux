@@ -93,16 +93,6 @@
 		};
 	};
 
-	gpio-keys {
-		compatible = "gpio-keys";
-		
-		wps-pairing {
-			label = "WPS Button";
-			gpios = <&gpio4 5 GPIO_ACTIVE_LOW>;
-			linux,code = <0x211>; //KEY_WPS_BUTTON
-		};
-	};
-
 	sound-hdmi {
 		compatible = "fsl,imx6q-audio-hdmi",
 			     "fsl,imx-audio-hdmi";
@@ -263,16 +253,6 @@
         pinctrl-names = "default";
         pinctrl-0 = <&pinctrl_i2c3_1>;
         status = "okay";
-
-	adv7610: adv7610@4C {
-		compatible = "adv,adv7610";
-		reg = <0x4C>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_ipu1_4>;
-		csi_id = <0>;
-		ipu_id = <0>;
-	};
-
 };
 
 &iomuxc {
@@ -300,10 +280,10 @@
 				MX6QDL_PAD_GPIO_2__GPIO1_IO02 0x80000000
 				MX6QDL_PAD_NANDF_CS3__GPIO6_IO16 0x80000000
 				MX6QDL_PAD_NANDF_WP_B__GPIO6_IO09 0x80000000	
-				//MX6QDL_PAD_SD1_DAT3__GPIO1_IO21 0x80000000	
-				//MX6QDL_PAD_SD1_DAT2__GPIO1_IO19 0x80000000	
-			        //MX6QDL_PAD_SD4_DAT5__GPIO2_IO13 0x80000000
-				//MX6QDL_PAD_SD4_DAT6__GPIO2_IO14 0x80000000
+				MX6QDL_PAD_SD1_DAT3__GPIO1_IO21 0x80000000	
+				MX6QDL_PAD_SD1_DAT2__GPIO1_IO19 0x80000000	
+			        MX6QDL_PAD_SD4_DAT5__GPIO2_IO13 0x80000000
+				MX6QDL_PAD_SD4_DAT6__GPIO2_IO14 0x80000000
 			>;
 		};
 	};
@@ -355,7 +335,7 @@
 
 &uart2 {
         pinctrl-names = "default";
-        pinctrl-0 = <&pinctrl_uart2_5>; //RTS and CTS are GPIOs
+        pinctrl-0 = <&pinctrl_uart2_4>;
         status = "okay";
 };
 

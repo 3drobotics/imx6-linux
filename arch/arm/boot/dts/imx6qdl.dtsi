@@ -1539,15 +1539,6 @@
 				MX6QDL_PAD_SD4_DAT7__UART2_TX_DATA   0x1b0b1
 			>;
 		};
-		
-		pinctrl_uart2_5: uart2grp-5 { /* DTE mode, RTS CTS are GPIOs */
-			fsl,pins = <
-				MX6QDL_PAD_SD4_DAT4__UART2_RX_DATA   0x1b0b1
-				MX6QDL_PAD_SD4_DAT7__UART2_TX_DATA   0x1b0b1
-				MX6QDL_PAD_SD4_DAT6__GPIO2_IO14 0x80000000
-				MX6QDL_PAD_SD4_DAT5__GPIO2_IO13 0x80000000
-			>;
-		};
 	};
 
 	uart3 {
