@@ -752,6 +752,12 @@ struct ath_softc {
 	struct rchan *rfs_chan_spec_scan;
 	enum spectral_mode spectral_mode;
 	struct ath_spec_scan spec_config;
+
+    struct ieee80211_vif *tx99_vif;
+    struct sk_buff *tx99_skb;
+    bool tx99_state;
+    s16 tx99_power;
+
 	int scanning;
 
 #ifdef CONFIG_PM_SLEEP
@@ -887,6 +893,11 @@ struct fft_sample_ht20 {
 
 	u8 data[SPECTRAL_HT20_NUM_BINS];
 } __packed;
+
+int ath9k_tx99_init(struct ath_softc *sc);
+void ath9k_tx99_deinit(struct ath_softc *sc);
+int ath9k_tx99_send(struct ath_softc *sc, struct sk_buff *skb,
+struct ath_tx_control *txctl);
 
 void ath9k_tasklet(unsigned long data);
 int ath_cabq_update(struct ath_softc *);

@@ -616,6 +616,26 @@ static void ar9002_hw_spectral_scan_wait(struct ath_hw *ah)
 	}
 }
 
+static void ar9002_hw_tx99_start(struct ath_hw *ah, u32 qnum)
+{
+    REG_SET_BIT(ah, 0x9864, 0x7f000);
+    REG_SET_BIT(ah, 0x9924, 0x7f00fe);
+    REG_CLR_BIT(ah, AR_DIAG_SW, AR_DIAG_RX_DIS);
+    REG_WRITE(ah, AR_CR, AR_CR_RXD);
+    REG_WRITE(ah, AR_DLCL_IFS(qnum), 0);
+    REG_WRITE(ah, AR_D_GBL_IFS_SIFS, 20);
+    REG_WRITE(ah, AR_D_GBL_IFS_EIFS, 20);
+    REG_WRITE(ah, AR_D_FPCTL, 0x10|qnum);
+    REG_WRITE(ah, AR_TIME_OUT, 0x00000400);
+    REG_WRITE(ah, AR_DRETRY_LIMIT(qnum), 0xffffffff);
+    REG_SET_BIT(ah, AR_QMISC(qnum), AR_Q_MISC_DCU_EARLY_TERM_REQ);
+}
+
+static void ar9002_hw_tx99_stop(struct ath_hw *ah)
+{
+    REG_SET_BIT(ah, AR_DIAG_SW, AR_DIAG_RX_DIS);
+}
+
 void ar9002_hw_attach_phy_ops(struct ath_hw *ah)
 {
 	struct ath_hw_private_ops *priv_ops = ath9k_hw_private_ops(ah);
@@ -633,6 +653,9 @@ void ar9002_hw_attach_phy_ops(struct ath_hw *ah)
 	ops->spectral_scan_config = ar9002_hw_spectral_scan_config;
 	ops->spectral_scan_trigger = ar9002_hw_spectral_scan_trigger;
 	ops->spectral_scan_wait = ar9002_hw_spectral_scan_wait;
+
+    ops->tx99_start = ar9002_hw_tx99_start;
+    ops->tx99_stop = ar9002_hw_tx99_stop;
 
 	ar9002_hw_set_nf_limits(ah);
 }

@@ -721,6 +721,10 @@ struct ath_hw_ops {
 				     struct ath_spec_scan *param);
 	void (*spectral_scan_trigger)(struct ath_hw *ah);
 	void (*spectral_scan_wait)(struct ath_hw *ah);
+
+    void (*tx99_start)(struct ath_hw *ah, u32 qnum);
+    void (*tx99_stop)(struct ath_hw *ah);
+    void (*tx99_set_txpower)(struct ath_hw *ah, u8 power);
 };
 
 struct ath_nf_limits {
