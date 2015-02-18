@@ -2407,7 +2407,9 @@ static struct sk_buff *ath9k_build_tx99_skb(struct ath_softc *sc)
         0x02, 0x23, 0x23, 0xab, 0x63, 0x89, 0x51, 0xb3,
         0xe7, 0x8b, 0x72, 0x90, 0x4c, 0xe8, 0xfb, 0xc0};
     u32 len = 1200;
+    struct ieee80211_tx_rate *rate;
     struct ieee80211_hw *hw = sc->hw;
+    struct ath_hw *ah = sc->sc_ah;
     struct ieee80211_hdr *hdr;
     struct ieee80211_tx_info *tx_info;
     struct sk_buff *skb;
@@ -2432,9 +2434,17 @@ static struct sk_buff *ath9k_build_tx99_skb(struct ath_softc *sc)
 
     tx_info = IEEE80211_SKB_CB(skb);
     memset(tx_info, 0, sizeof(*tx_info));
+    rate = &tx_info->control.rates[0];
     tx_info->band = hw->conf.chandef.chan->band;
     tx_info->flags = IEEE80211_TX_CTL_NO_ACK;
     tx_info->control.vif = sc->tx99_vif;
+
+    rate->count = 1;
+    if (ah->curchan && IS_CHAN_HT(ah->curchan)) {
+        rate->flags |= IEEE80211_TX_RC_MCS;
+        if (IS_CHAN_HT40(ah->curchan))
+            rate->flags |= IEEE80211_TX_RC_40_MHZ_WIDTH;
+    }
 
     memcpy(skb->data + sizeof(*hdr), PN9Data, sizeof(PN9Data));
 
@@ -2458,7 +2468,7 @@ int ath9k_tx99_init(struct ath_softc *sc)
     struct ath_tx_control txctl;
     int r;
 
-    if (sc->sc_flags & SC_OP_INVALID) {
+    if (test_bit(SC_OP_INVALID, &sc->sc_flags)) {
         ath_err(common,
                 "driver is in invalid state unable to use TX99");
         return -EINVAL;
