@@ -684,6 +684,7 @@ struct ath_softc {
 	struct ieee80211_hw *hw;
 	struct device *dev;
 
+	u32 chan_bw;
 	struct survey_info *cur_survey;
 	struct survey_info survey[ATH9K_NUM_CHANNELS];
 
@@ -888,6 +889,7 @@ struct fft_sample_ht20 {
 	u8 data[SPECTRAL_HT20_NUM_BINS];
 } __packed;
 
+int ath9k_config(struct ieee80211_hw *hw, u32 changed);
 void ath9k_tasklet(unsigned long data);
 int ath_cabq_update(struct ath_softc *);
 

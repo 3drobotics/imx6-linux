@@ -1139,7 +1139,7 @@ int ath9k_spectral_scan_config(struct ieee80211_hw *hw,
 	return 0;
 }
 
-static int ath9k_config(struct ieee80211_hw *hw, u32 changed)
+int ath9k_config(struct ieee80211_hw *hw, u32 changed)
 {
 	struct ath_softc *sc = hw->priv;
 	struct ath_hw *ah = sc->sc_ah;
@@ -1195,9 +1195,11 @@ static int ath9k_config(struct ieee80211_hw *hw, u32 changed)
 		struct ieee80211_channel *curchan = hw->conf.chandef.chan;
 		enum nl80211_channel_type channel_type =
 			cfg80211_get_chandef_type(&conf->chandef);
+		struct ath9k_channel *hchan;
 		int pos = curchan->hw_value;
 		int old_pos = -1;
 		unsigned long flags;
+		u32 oldflags;
 
 		if (ah->curchan)
 			old_pos = ah->curchan - &ah->channels[0];
@@ -1233,7 +1235,23 @@ static int ath9k_config(struct ieee80211_hw *hw, u32 changed)
 			memset(&sc->survey[pos], 0, sizeof(struct survey_info));
 		}
 
-		if (ath_set_channel(sc, hw, &sc->sc_ah->channels[pos]) < 0) {
+		hchan = &sc->sc_ah->channels[pos];
+		oldflags = hchan->channelFlags;
+		switch (sc->chan_bw) {
+		case 5:
+			hchan->channelFlags &= ~CHANNEL_HALF;
+			hchan->channelFlags |= CHANNEL_QUARTER;
+			break;
+		case 10:
+			hchan->channelFlags &= ~CHANNEL_QUARTER;
+			hchan->channelFlags |= CHANNEL_HALF;
+			break;
+		default:
+			hchan->channelFlags &= ~(CHANNEL_HALF | CHANNEL_QUARTER);
+			break;
+		}
+
+		if (ath_set_channel(sc, hw, hchan) < 0) {
 			ath_err(common, "Unable to set channel\n");
 			mutex_unlock(&sc->mutex);
 			ath9k_ps_restore(sc);
