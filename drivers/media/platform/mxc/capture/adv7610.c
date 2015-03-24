@@ -92,7 +92,6 @@ struct adv7610_i2c_map {
 static struct adv7610_i2c_map adv7610_i2c_clients = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 
 wait_queue_head_t i2c_wait;
-adv7610_vidout_fmt_t current_fmt;
 
 static int adv7610_write(struct i2c_client *client, u8 reg, u8 val);
 static inline int adv7610_read(struct i2c_client *client, u8 reg);
@@ -130,7 +129,7 @@ int adv7610_get_vidout_fmt(adv7610_vidout_fmt_t *fmt)
 			}
 		}  //wait for the vert filter to lock
 	
-		msleep(300);	//wait 300ms for some reason before the values are good...
+		//msleep(300);	//wait 300ms for some reason before the values are good...
 		fmt->width = (adv7610_read(adv7610_i2c_clients.hdmi, 0x07) & 0x1F) << 8;
 		fmt->width |= adv7610_read(adv7610_i2c_clients.hdmi, 0x08);
 
@@ -175,8 +174,6 @@ default_exit:
 		fmt->width, fmt->height,
 		(fmt->interlaced?"i":"p"),
 		fmt->fps);
-
-    memcpy(&current_fmt,fmt,sizeof(adv7610_vidout_fmt_t));
 
 	return 0;
 }
@@ -364,18 +361,16 @@ static int ioctl_enum_framesizes(struct v4l2_int_device *s,
 				 struct v4l2_frmsizeenum *fsize)
 {
 	struct sensor *sensor = s->priv;
-//	adv7610_vidout_fmt_t fmt;
+	adv7610_vidout_fmt_t fmt;
 
 	if (fsize->index >= 1)
 		return -EINVAL;
 
-//    if (adv7610_get_vidout_fmt(&fmt))
-//		return -ENODEV;
+    if (adv7610_get_vidout_fmt(&fmt))
+		return -ENODEV;
 
-//	sensor->sen.pix.height = fmt.height;
-//	sensor->sen.pix.width = fmt.width;
-	sensor->sen.pix.height = current_fmt.height;
-	sensor->sen.pix.width = current_fmt.width;
+	sensor->sen.pix.height = fmt.height;
+	sensor->sen.pix.width = fmt.width;
 	fsize->discrete.width = sensor->sen.pix.width;
 	fsize->discrete.height  = sensor->sen.pix.height;
 
