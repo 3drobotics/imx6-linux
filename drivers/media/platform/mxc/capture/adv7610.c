@@ -129,7 +129,7 @@ int adv7610_get_vidout_fmt(adv7610_vidout_fmt_t *fmt)
 			}
 		}  //wait for the vert filter to lock
 	
-		msleep(300);	//wait 300ms for some reason before the values are good...
+		//msleep(300);	//wait 300ms for some reason before the values are good...
 		fmt->width = (adv7610_read(adv7610_i2c_clients.hdmi, 0x07) & 0x1F) << 8;
 		fmt->width |= adv7610_read(adv7610_i2c_clients.hdmi, 0x08);
 
@@ -174,7 +174,6 @@ default_exit:
 		fmt->width, fmt->height,
 		(fmt->interlaced?"i":"p"),
 		fmt->fps);
-
 
 	return 0;
 }
@@ -367,7 +366,7 @@ static int ioctl_enum_framesizes(struct v4l2_int_device *s,
 	if (fsize->index >= 1)
 		return -EINVAL;
 
-	if (adv7610_get_vidout_fmt(&fmt))
+    if (adv7610_get_vidout_fmt(&fmt))
 		return -ENODEV;
 
 	sensor->sen.pix.height = fmt.height;
