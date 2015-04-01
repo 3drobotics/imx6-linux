@@ -46,7 +46,7 @@
 
 #include "mxc_v4l2_capture.h"
 
-//#define USE_16BIT
+#define USE_16BIT
 //#define SUPPORT_1080P
 
 /*!
@@ -129,7 +129,7 @@ int adv7610_get_vidout_fmt(adv7610_vidout_fmt_t *fmt)
 			}
 		}  //wait for the vert filter to lock
 	
-		msleep(300);	//wait 300ms for some reason before the values are good...
+		//msleep(300);	//wait 300ms for some reason before the values are good...
 		fmt->width = (adv7610_read(adv7610_i2c_clients.hdmi, 0x07) & 0x1F) << 8;
 		fmt->width |= adv7610_read(adv7610_i2c_clients.hdmi, 0x08);
 
@@ -174,7 +174,6 @@ default_exit:
 		fmt->width, fmt->height,
 		(fmt->interlaced?"i":"p"),
 		fmt->fps);
-
 
 	return 0;
 }
@@ -367,7 +366,7 @@ static int ioctl_enum_framesizes(struct v4l2_int_device *s,
 	if (fsize->index >= 1)
 		return -EINVAL;
 
-	if (adv7610_get_vidout_fmt(&fmt))
+    if (adv7610_get_vidout_fmt(&fmt))
 		return -ENODEV;
 
 	sensor->sen.pix.height = fmt.height;
@@ -582,13 +581,13 @@ static int adv7610_hw_init(struct i2c_client *client)
         adv7610_write(adv7610_i2c_clients.io, 0x06, 0xA1); // Invert CLK
 #endif
 
-	adv7610_write(adv7610_i2c_clients.io, 0x14, 0x7F); //Max Drive Strength
+	adv7610_write(adv7610_i2c_clients.io, 0x14, 0x55); //med-low drive strength (including clock)
 
-        adv7610_write(adv7610_i2c_clients.cp, 0xBA, 0x01); //Set HDMI FreeRun
+    adv7610_write(adv7610_i2c_clients.cp, 0xBA, 0x01); //Set HDMI FreeRun
 
-        adv7610_write(adv7610_i2c_clients.io, 0x0B, 0x44);// Power up part
-        adv7610_write(adv7610_i2c_clients.io, 0x0c, 0x42); //Power up part
-        adv7610_write(adv7610_i2c_clients.io, 0x15, 0xB8); // Disable Tristate of clock and data 
+    adv7610_write(adv7610_i2c_clients.io, 0x0B, 0x44);// Power up part
+    adv7610_write(adv7610_i2c_clients.io, 0x0c, 0x42); //Power up part
+    adv7610_write(adv7610_i2c_clients.io, 0x15, 0xB8); // Disable Tristate of clock and data 
 
 	adv7610_write(adv7610_i2c_clients.ksv, 0x40, 0x81); // Disable HDCP 1.1 features
 	adv7610_write(adv7610_i2c_clients.hdmi, 0x9B, 0x03); // ADI recommended setting
@@ -675,9 +674,9 @@ static int adv7610_video_probe(struct i2c_client *client,
 	if(ret == -ENODEV)
 		return ret;
 
-	/* This function attaches this structure to the /dev/video<n> device */
-	adv7610_int_device.priv = sens;
-	ret = v4l2_int_device_register(&adv7610_int_device);
+    /* This function attaches this structure to the /dev/video<n> device */
+    adv7610_int_device.priv = sens;
+    ret = v4l2_int_device_register(&adv7610_int_device);
 
 	return ret;
 }
