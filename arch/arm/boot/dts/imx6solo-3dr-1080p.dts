@@ -16,13 +16,6 @@
 };
 
 / {
-	aliases {
-		mxcfb0 = &mxcfb1;
-		mxcfb1 = &mxcfb2;
-		mxcfb2 = &mxcfb3;
-		mxcfb3 = &mxcfb4;
-	};
-
 	memory {
 		reg = <0x10000000 0x40000000>;
 	};
@@ -59,13 +52,6 @@
 			enable-active-high;
 		};
 
-		reg_mipi_dsi_pwr_on: mipi_dsi_pwr_on {
-			compatible = "regulator-fixed";
-			regulator-name = "mipi_dsi_pwr_on";
-			gpio = <&gpio6 14 0>;
-			enable-active-high;
-		};
-
 		reg_3p3v: 3p3v {
 			compatible = "regulator-fixed";
 			regulator-name = "3P3V";
@@ -82,15 +68,6 @@
 			regulator-always-on;
 		};
 
-		reg_sensor: sensor_supply {
-			compatible = "regulator-fixed";
-			regulator-name = "sensor-supply";
-			regulator-min-microvolt = <3300000>;
-			regulator-max-microvolt = <3300000>;
-			gpio = <&gpio2 31 0>;
-			startup-delay-us = <500>;
-			enable-active-high;
-		};
 	};
 
 	gpio-keys {
@@ -103,67 +80,6 @@
 		};
 	};
 
-	sound-hdmi {
-		compatible = "fsl,imx6q-audio-hdmi",
-			     "fsl,imx-audio-hdmi";
-		model = "imx-audio-hdmi";
-		hdmi-controller = <&hdmi_audio>;
-	};
-
-	mxcfb1: fb@0 {
-		compatible = "fsl,mxc_sdc_fb";
-		disp_dev = "ldb";
-		interface_pix_fmt = "RGB666";
-		mode_str ="LDB-XGA";
-		default_bpp = <16>;
-		int_clk = <0>;
-		late_init = <0>;
-		status = "disabled";
-	};
-
-	mxcfb2: fb@1 {
-		compatible = "fsl,mxc_sdc_fb";
-		disp_dev = "hdmi";
-		interface_pix_fmt = "RGB24";
-		mode_str ="1920x1080M@60";
-		default_bpp = <24>;
-		int_clk = <0>;
-		late_init = <0>;
-		status = "disabled";
-	};
-
-	mxcfb3: fb@2 {
-		compatible = "fsl,mxc_sdc_fb";
-		disp_dev = "lcd";
-		interface_pix_fmt = "RGB565";
-		mode_str ="CLAA-WVGA";
-		default_bpp = <16>;
-		int_clk = <0>;
-		late_init = <0>;
-		status = "disabled";
-	};
-
-	mxcfb4: fb@3 {
-		compatible = "fsl,mxc_sdc_fb";
-		disp_dev = "ldb";
-		interface_pix_fmt = "RGB666";
-		mode_str ="LDB-XGA";
-		default_bpp = <16>;
-		int_clk = <0>;
-		late_init = <0>;
-		status = "disabled";
-	};
-
-	lcd@0 {
-		compatible = "fsl,lcd";
-		ipu_id = <0>;
-		disp_id = <0>;
-		default_ifmt = "RGB565";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_ipu1_1>;
-		status = "okay";
-	};
-
 	v4l2_cap_0 {
 		compatible = "fsl,imx6q-v4l2-capture";
 		ipu_id = <0>;
@@ -171,36 +87,12 @@
 		mclk_source = <0>;
 		status = "okay";
 	};
-
-	v4l2_cap_1 {
-		compatible = "fsl,imx6q-v4l2-capture";
-		ipu_id = <0>;
-		csi_id = <1>;
-		mclk_source = <0>;
-		status = "okay";
-	};
-
-	v4l2_out {
-		compatible = "fsl,mxc_v4l2_output";
-		status = "okay";
-	};
-
-	mipi_dsi_reset: mipi-dsi-reset {
-		compatible = "gpio-reset";
-		reset-gpios = <&gpio6 11 GPIO_ACTIVE_LOW>;
-		reset-delay-us = <50>;
-		#reset-cells = <0>;
-	};
 };
 
 &cpu0 {
         arm-supply = <&reg_arm>;
         soc-supply = <&reg_soc>;
         pu-supply = <&reg_pu>; /* use pu_dummy if VDDSOC share with VDDPU */
-};
-
-&gpu {
-        pu-supply = <&reg_pu>; /* ldo-bypass:use pu_dummy if VDDSOC share with VDDPU */
 };
 
 &vpu {
@@ -215,28 +107,6 @@
 	fsl,ldo-bypass = <0>; /* use ldo-bypass, u-boot will check it and configure */
 	fsl,wdog-reset = <1>; /* watchdog select of reset source */
 	pu-supply = <&reg_pu>; /* ldo-bypass:use pu_dummy if VDDSOC share with VDDPU */
-};
-
-&hdmi_audio {
-	status = "okay";
-};
-
-&hdmi_cec {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_hdmi_cec_2>;
-	status = "okay";
-};
-
-&hdmi_core {
-	ipu_id = <0>;
-	disp_id = <0>;
-	status = "okay";
-};
-
-&hdmi_video {
-	fsl,phy_reg_vlev = <0x0294>;
-	fsl,phy_reg_cksymtx = <0x800d>;
-	status = "okay";
 };
 
 &i2c2 {
@@ -300,42 +170,10 @@
 	};
 };
 
-&ldb {
-	ipu_id = <1>;
-	disp_id = <1>;
-	ext_ref = <1>;
-	mode = "sep1";
-	sec_ipu_id = <1>;
-	sec_disp_id = <0>;
-	status = "okay";
-};
-
-&mipi_csi {
-	status = "okay";
-	ipu_id = <0>;
-	csi_id = <1>;
-	v_channel = <0>;
-	lanes = <2>;
-};
-
-&mipi_dsi {
-	dev_id = <0>;
-	disp_id = <1>;
-	lcd_panel = "TRULY-WVGA";
-	disp-power-on-supply = <&reg_mipi_dsi_pwr_on>;
-	resets = <&mipi_dsi_reset>;
-	status = "okay";
-};
-
 &pcie {
 	//power-on-gpio = <&gpio5 20 0>;
 	reset-gpio = <&gpio5 2 0>;
     wake-up-gpio = <&gpio7 12 0>;
-	status = "okay";
-};
-
-&ssi2 {
-	fsl,mode = "i2s-slave";
 	status = "okay";
 };
 
@@ -381,17 +219,6 @@
 	status = "okay";
 };
 
-&usdhc2 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_usdhc2_1>;
-	cd-gpios = <&gpio2 2 0>;
-	wp-gpios = <&gpio2 3 0>;
-	no-1-8-v;
-	keep-power-in-suspend;
-	enable-sdio-wakeup;
-	status = "okay";
-};
-
 &usdhc3 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usdhc3_1>;
@@ -400,25 +227,6 @@
 	no-1-8-v;
 	keep-power-in-suspend;
 	enable-sdio-wakeup;
-	status = "okay";
-};
-
-&epdc {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_epdc_0>;
-	status = "okay";
-};
-
-&ldb {
-	ipu_id = <0>;
-	sec_ipu_id = <0>;
-};
-
-&mxcfb1 {
-	status = "okay";
-};
-
-&mxcfb2 {
 	status = "okay";
 };
 
