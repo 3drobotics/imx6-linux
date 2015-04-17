@@ -163,8 +163,8 @@ int adv7610_get_vidout_fmt(adv7610_vidout_fmt_t *fmt)
 default_exit:
 		pr_debug("ADV7610 returning default resolution\n");
 		//Use default values
-		fmt->width = 1280;
-		fmt->height = 720;
+		fmt->width = 640;
+		fmt->height = 480;
 		fmt->interlaced = false;
 		fmt->fps = 60;
 	}
@@ -513,112 +513,108 @@ static const int edid[256] = {
 
 static int adv7610_hw_init(struct i2c_client *client)
 {
-	int i, chip_id_high, chip_id_low;
-	
-	//Make sure its there...
-	chip_id_high = adv7610_read(client,ADV7610_CHIP_ID_HIGH_BYTE);
-	if (chip_id_high != 0x20) {
-		pr_warning("adv7610 is not found\n");
-		return -ENODEV;
-	}
-	chip_id_low = adv7610_read(client,ADV7610_CHIP_ID_LOW_BYTE);
-	if (chip_id_low != 0x51) {
-		pr_warning("adv7610 is not found\n");
-		return -ENODEV;
-	}
+    int i, chip_id_high, chip_id_low;
 
-	dev_dbg(&client->dev,
-                "In adv7610:adv7610_hw_init\n");
+    //Make sure its there...
+    chip_id_high = adv7610_read(client,ADV7610_CHIP_ID_HIGH_BYTE);
+    if (chip_id_high != 0x20) {
+        pr_warning("adv7610 is not found\n");
+        return -ENODEV;
+    }
+    chip_id_low = adv7610_read(client,ADV7610_CHIP_ID_LOW_BYTE);
+    if (chip_id_low != 0x51) {
+        pr_warning("adv7610 is not found\n");
+        return -ENODEV;
+    }
 
-	adv7610_hard_reset(); //Hardware reset first
- 
-        adv7610_write(client, 0xFF, 0x80); //Perform a software reset.
-        msleep(100);
+    dev_dbg(&client->dev,
+            "In adv7610:adv7610_hw_init\n");
 
-	//Set up the map addresses
-        adv7610_write(client,	0xF4,	CEC_MAP_ADDR);   //cec map i2c address
-        adv7610_write(client,	0xF5,	INFOFRAME_MAP_ADDR);     //infofrmae map i2c address
-        adv7610_write(client,	0xF8,	DPLL_MAP_ADDR);  //dpll map i2c address
-        adv7610_write(client,	0xF9,	KSV_MAP_ADDR);   //ksv map i2c address
-        adv7610_write(client,	0xFA,	EDID_MAP_ADDR);  //edid map i2c address
-        adv7610_write(client,	0xFB,	HDMI_MAP_ADDR);  //hdmi map i2c address
-        adv7610_write(client,	0xFD,	CP_MAP_ADDR);    //cp map i2c address
-	
+    adv7610_hard_reset(); //Hardware reset first
 
-	//i2c dummy clients based on the above map addresses
-        adv7610_i2c_clients.io = 	client;
-        adv7610_i2c_clients.cec = 	i2c_new_dummy(client->adapter, CEC_MAP_ADDR >> 1);
-        adv7610_i2c_clients.infoframe = i2c_new_dummy(client->adapter, INFOFRAME_MAP_ADDR >> 1);
-        adv7610_i2c_clients.dpll = 	i2c_new_dummy(client->adapter, DPLL_MAP_ADDR >> 1);
-        adv7610_i2c_clients.ksv = 	i2c_new_dummy(client->adapter, KSV_MAP_ADDR >> 1);
-        adv7610_i2c_clients.edid = 	i2c_new_dummy(client->adapter, EDID_MAP_ADDR >> 1);
-        adv7610_i2c_clients.hdmi= 	i2c_new_dummy(client->adapter, HDMI_MAP_ADDR >> 1);
-        adv7610_i2c_clients.cp = 	i2c_new_dummy(client->adapter, CP_MAP_ADDR >> 1);
+    adv7610_write(client, 0xFF, 0x80); //Perform a software reset.
+    msleep(100);
 
-	//Set the AUTO_EDID to turn on when the internal EDID is enabled
-	adv7610_write(adv7610_i2c_clients.hdmi, 0x6C, 0xA0);
+    //Set up the map addresses
+    adv7610_write(client,	0xF4,	CEC_MAP_ADDR);   //cec map i2c address
+    adv7610_write(client,	0xF5,	INFOFRAME_MAP_ADDR);     //infofrmae map i2c address
+    adv7610_write(client,	0xF8,	DPLL_MAP_ADDR);  //dpll map i2c address
+    adv7610_write(client,	0xF9,	KSV_MAP_ADDR);   //ksv map i2c address
+    adv7610_write(client,	0xFA,	EDID_MAP_ADDR);  //edid map i2c address
+    adv7610_write(client,	0xFB,	HDMI_MAP_ADDR);  //hdmi map i2c address
+    adv7610_write(client,	0xFD,	CP_MAP_ADDR);    //cp map i2c address
 
-	adv7610_write(adv7610_i2c_clients.ksv, 0x77, 0x00); //Disable the Internal EDID
 
-	//Set the EDID value
-	for(i=0; i<=0xFF; ++i)
-		adv7610_write(adv7610_i2c_clients.edid,i,edid[i]);
+    //i2c dummy clients based on the above map addresses
+    adv7610_i2c_clients.io = 	client;
+    adv7610_i2c_clients.cec = 	i2c_new_dummy(client->adapter, CEC_MAP_ADDR >> 1);
+    adv7610_i2c_clients.infoframe = i2c_new_dummy(client->adapter, INFOFRAME_MAP_ADDR >> 1);
+    adv7610_i2c_clients.dpll = 	i2c_new_dummy(client->adapter, DPLL_MAP_ADDR >> 1);
+    adv7610_i2c_clients.ksv = 	i2c_new_dummy(client->adapter, KSV_MAP_ADDR >> 1);
+    adv7610_i2c_clients.edid = 	i2c_new_dummy(client->adapter, EDID_MAP_ADDR >> 1);
+    adv7610_i2c_clients.hdmi= 	i2c_new_dummy(client->adapter, HDMI_MAP_ADDR >> 1);
+    adv7610_i2c_clients.cp = 	i2c_new_dummy(client->adapter, CP_MAP_ADDR >> 1);
 
-	adv7610_write(adv7610_i2c_clients.ksv, 0x77, 0x00); //Set the Most Significant Bit of the SPA location to 0
-	adv7610_write(adv7610_i2c_clients.ksv, 0x52, 0x20); //Set the SPA for port B.
-	adv7610_write(adv7610_i2c_clients.ksv, 0x53, 0x00); //Set the SPA for port B.
-	adv7610_write(adv7610_i2c_clients.ksv, 0x70, 0x9E); //Set the Least Significant Byte of the SPA location
-	adv7610_write(adv7610_i2c_clients.ksv, 0x74, 0x03); //Enable the Internal EDID for Ports
-	
-	adv7610_write(adv7610_i2c_clients.hdmi, 0x00, 0x00); //Select port A (shouldn't matter, only 1 port)
+    //Set the AUTO_EDID to turn on when the internal EDID is enabled
+    adv7610_write(adv7610_i2c_clients.hdmi, 0x6C, 0xA0);
+    
+    adv7610_write(adv7610_i2c_clients.ksv, 0x77, 0x00); //Disable the Internal EDID
+    //Set the EDID value
+    for(i=0; i<=0xFF; ++i)
+        adv7610_write(adv7610_i2c_clients.edid,i,edid[i]);
+    adv7610_write(adv7610_i2c_clients.ksv, 0x77, 0x00); //Set the Most Significant Bit of the SPA location to 0
+    adv7610_write(adv7610_i2c_clients.ksv, 0x52, 0x20); //Set the SPA for port B.
+    adv7610_write(adv7610_i2c_clients.ksv, 0x53, 0x00); //Set the SPA for port B.
+    adv7610_write(adv7610_i2c_clients.ksv, 0x70, 0x9E); //Set the Least Significant Byte of the SPA location
+    adv7610_write(adv7610_i2c_clients.ksv, 0x74, 0x03); //Enable the Internal EDID for Ports
+
+    adv7610_write(adv7610_i2c_clients.hdmi, 0x00, 0x00); //Select port A (shouldn't matter, only 1 port)
 #ifdef USE_16BIT
-        adv7610_write(adv7610_i2c_clients.io, 0x03, 0x80);// 16-bit SDR ITU-656 mode
-        adv7610_write(adv7610_i2c_clients.io, 0x19, 0x89);
+    adv7610_write(adv7610_i2c_clients.io, 0x03, 0x80);// 16-bit SDR ITU-656 mode
+    adv7610_write(adv7610_i2c_clients.io, 0x19, 0x89);
 #else
-        adv7610_write(adv7610_i2c_clients.io, 0x03, 0x00);// 8-bit SDR ITU-656 mode
-        adv7610_write(adv7610_i2c_clients.io, 0x19, 0xC0);// Enable LLC DLL, double clock
-        adv7610_write(adv7610_i2c_clients.io, 0x33, 0x40);// Enable LLC_DLL_MUX
-        adv7610_write(adv7610_i2c_clients.io, 0x06, 0xA1); // Invert CLK
+    adv7610_write(adv7610_i2c_clients.io, 0x03, 0x00);// 8-bit SDR ITU-656 mode
+    adv7610_write(adv7610_i2c_clients.io, 0x19, 0xC0);// Enable LLC DLL, double clock
+    adv7610_write(adv7610_i2c_clients.io, 0x33, 0x40);// Enable LLC_DLL_MUX
+    adv7610_write(adv7610_i2c_clients.io, 0x06, 0xA1); // Invert CLK
 #endif
 
-	adv7610_write(adv7610_i2c_clients.io, 0x14, 0x55); //med-low drive strength (including clock)
-
+    adv7610_write(adv7610_i2c_clients.io, 0x14, 0x55); //med-low drive strength (including clock)
     adv7610_write(adv7610_i2c_clients.cp, 0xBA, 0x01); //Set HDMI FreeRun
-
     adv7610_write(adv7610_i2c_clients.io, 0x0B, 0x44);// Power up part
     adv7610_write(adv7610_i2c_clients.io, 0x0c, 0x42); //Power up part
     adv7610_write(adv7610_i2c_clients.io, 0x15, 0xB8); // Disable Tristate of clock and data 
 
-	adv7610_write(adv7610_i2c_clients.ksv, 0x40, 0x81); // Disable HDCP 1.1 features
-	adv7610_write(adv7610_i2c_clients.hdmi, 0x9B, 0x03); // ADI recommended setting
-	adv7610_write(adv7610_i2c_clients.hdmi, 0xC1, 0x01); // ADI recommended setting
-	adv7610_write(adv7610_i2c_clients.hdmi, 0xC2, 0x01); // ADI recommended setting
-	adv7610_write(adv7610_i2c_clients.hdmi, 0xC3, 0x01); // ADI recommended setting
-	adv7610_write(adv7610_i2c_clients.hdmi, 0xC4, 0x01); // ADI recommended setting
-	adv7610_write(adv7610_i2c_clients.hdmi, 0xC5, 0x01); // ADI recommended setting
-	adv7610_write(adv7610_i2c_clients.hdmi, 0xC6, 0x01); // ADI recommended setting
-	adv7610_write(adv7610_i2c_clients.hdmi, 0xC7, 0x01); // ADI recommended setting
-	adv7610_write(adv7610_i2c_clients.hdmi, 0xC8, 0x01); // ADI recommended setting
-	adv7610_write(adv7610_i2c_clients.hdmi, 0xC9, 0x01); // ADI recommended setting
-	adv7610_write(adv7610_i2c_clients.hdmi, 0xCA, 0x01); // ADI recommended setting
-	adv7610_write(adv7610_i2c_clients.hdmi, 0xCB, 0x01); // ADI recommended setting
-	adv7610_write(adv7610_i2c_clients.hdmi, 0xCC, 0x01); // ADI recommended setting
-	adv7610_write(adv7610_i2c_clients.hdmi, 0x00, 0x00); // Set HDMI Input Port A
-	adv7610_write(adv7610_i2c_clients.hdmi, 0x83, 0xFE); // Enable clock terminator for port A
-	adv7610_write(adv7610_i2c_clients.hdmi, 0x6F, 0x08); // ADI recommended setting
-	adv7610_write(adv7610_i2c_clients.hdmi, 0x85, 0x1F); // ADI recommended setting
-	adv7610_write(adv7610_i2c_clients.hdmi, 0x87, 0x70); // ADI recommended setting
-	adv7610_write(adv7610_i2c_clients.hdmi, 0x8D, 0x04); // LFG
-	adv7610_write(adv7610_i2c_clients.hdmi, 0x8E, 0x1E); // HFG
-	adv7610_write(adv7610_i2c_clients.hdmi, 0x1A, 0x8A); // unmute audio
-	adv7610_write(adv7610_i2c_clients.hdmi, 0x57, 0xDA); // ADI recommended setting
-	adv7610_write(adv7610_i2c_clients.hdmi, 0x58, 0x01); // ADI recommended setting
-	adv7610_write(adv7610_i2c_clients.hdmi, 0x75, 0x10); // DDC drive strength
+    adv7610_write(adv7610_i2c_clients.ksv, 0x40, 0x81); // Disable HDCP 1.1 features
+    adv7610_write(adv7610_i2c_clients.hdmi, 0x9B, 0x03); // ADI recommended setting
+    adv7610_write(adv7610_i2c_clients.hdmi, 0xC1, 0x01); // ADI recommended setting
+    adv7610_write(adv7610_i2c_clients.hdmi, 0xC2, 0x01); // ADI recommended setting
+    adv7610_write(adv7610_i2c_clients.hdmi, 0xC3, 0x01); // ADI recommended setting
+    adv7610_write(adv7610_i2c_clients.hdmi, 0xC4, 0x01); // ADI recommended setting
+    adv7610_write(adv7610_i2c_clients.hdmi, 0xC5, 0x01); // ADI recommended setting
+    adv7610_write(adv7610_i2c_clients.hdmi, 0xC6, 0x01); // ADI recommended setting
+    adv7610_write(adv7610_i2c_clients.hdmi, 0xC7, 0x01); // ADI recommended setting
+    adv7610_write(adv7610_i2c_clients.hdmi, 0xC8, 0x01); // ADI recommended setting
+    adv7610_write(adv7610_i2c_clients.hdmi, 0xC9, 0x01); // ADI recommended setting
+    adv7610_write(adv7610_i2c_clients.hdmi, 0xCA, 0x01); // ADI recommended setting
+    adv7610_write(adv7610_i2c_clients.hdmi, 0xCB, 0x01); // ADI recommended setting
+    adv7610_write(adv7610_i2c_clients.hdmi, 0xCC, 0x01); // ADI recommended setting
+    adv7610_write(adv7610_i2c_clients.hdmi, 0x00, 0x00); // Set HDMI Input Port A
+    adv7610_write(adv7610_i2c_clients.hdmi, 0x83, 0xFE); // Enable clock terminator for port A
+    adv7610_write(adv7610_i2c_clients.hdmi, 0x6F, 0x08); // ADI recommended setting
+    adv7610_write(adv7610_i2c_clients.hdmi, 0x85, 0x1F); // ADI recommended setting
+    adv7610_write(adv7610_i2c_clients.hdmi, 0x87, 0x70); // ADI recommended setting
+    adv7610_write(adv7610_i2c_clients.hdmi, 0x8D, 0x04); // LFG
+    adv7610_write(adv7610_i2c_clients.hdmi, 0x8E, 0x1E); // HFG
+    adv7610_write(adv7610_i2c_clients.hdmi, 0x1A, 0x8A); // unmute audio
+    adv7610_write(adv7610_i2c_clients.hdmi, 0x57, 0xDA); // ADI recommended setting
+    adv7610_write(adv7610_i2c_clients.hdmi, 0x58, 0x01); // ADI recommended setting
+    adv7610_write(adv7610_i2c_clients.hdmi, 0x75, 0x10); // DDC drive strength
 
-	adv7610_write(adv7610_i2c_clients.io, 0x01, 0x25);   //30fps, HDMI COMP
-	adv7610_write(adv7610_i2c_clients.io, 0x00, 0x13);   //720p
+    adv7610_write(adv7610_i2c_clients.io, 0x1, 0x6); // Prim_Mode =110b HDMI-GR
+    adv7610_write(adv7610_i2c_clients.io, 0x2, 0xF5); // Auto CSC, RGB out, Set op_656 bit
 
-	return 0;
+    return 0;
 }
 
 static int adv7610_video_probe(struct i2c_client *client,
