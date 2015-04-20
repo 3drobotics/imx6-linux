@@ -614,6 +614,12 @@ static int adv7610_hw_init(struct i2c_client *client)
     adv7610_write(adv7610_i2c_clients.io, 0x1, 0x6); // Prim_Mode =110b HDMI-GR
     adv7610_write(adv7610_i2c_clients.io, 0x2, 0xF5); // Auto CSC, RGB out, Set op_656 bit
 
+    //Free run should be black, not blue
+    adv7610_write(adv7610_i2c_clients.cp, 0xBF, 0x16); //Turn on DEF_COL_MAN_VAL
+    adv7610_write(adv7610_i2c_clients.cp, 0xC0, 0x00); //Free run color CHA (Y)
+    adv7610_write(adv7610_i2c_clients.cp, 0xC1, 0x80); //Free run color CHB (U)
+    adv7610_write(adv7610_i2c_clients.cp, 0xC2, 0x80); //Free run color CHC (V)
+
     return 0;
 }
 
