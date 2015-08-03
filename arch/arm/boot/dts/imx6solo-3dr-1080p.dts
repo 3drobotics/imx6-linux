@@ -160,7 +160,6 @@
 				MX6QDL_PAD_SD3_RST__GPIO7_IO08 0x80000000
 				MX6QDL_PAD_GPIO_17__GPIO7_IO12 0x80000000
 				MX6QDL_PAD_GPIO_9__GPIO1_IO09 0x80000000
-				MX6QDL_PAD_GPIO_1__WDOG2_B 0x80000000
 				MX6QDL_PAD_GPIO_2__GPIO1_IO02 0x80000000
 				MX6QDL_PAD_NANDF_CS3__GPIO6_IO16 0x80000000
 				MX6QDL_PAD_NANDF_WP_B__GPIO6_IO09 0x80000000	
@@ -214,7 +213,7 @@
 &usbotg {
 	vbus-supply = <&reg_usb_otg_vbus>;
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_usbotg_2>;
+	pinctrl-0 = <&pinctrl_usbotg_1>;
 	disable-over-current;
 	status = "okay";
 };
