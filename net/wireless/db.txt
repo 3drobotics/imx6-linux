@@ -341,7 +341,7 @@ country EG: DFS-ETSI
 # Orden IET/787/2013, de 25 de abril, por la que se aprueba
 # el cuadro nacional de atribución de frecuencias.
 # http://www.boe.es/diario_boe/txt.php?id=BOE-A-2013-4845
- #
+#
 # more info at "Cuadro nacional de atribución de frecuencias (CNAF)":
 # http://www.minetur.gob.es/telecomunicaciones/espectro/paginas/cnaf.aspx
 
@@ -369,7 +369,7 @@ country FM: DFS-FCC
 	(5735 - 5835 @ 80), (30)
 
 country FR: DFS-ETSI
-	(2402 - 2482 @ 40), (20)
+	(2402 - 2482 @ 40), (15)
 	(5170 - 5250 @ 80), (20)
 	(5250 - 5330 @ 80), (20), DFS
 	(5490 - 5710 @ 80), (27), DFS
@@ -384,7 +384,7 @@ country GE: DFS-ETSI
 	(57240 - 65880 @ 2160), (40), NO-OUTDOOR
 
 country GB: DFS-ETSI
-	(2402 - 2482 @ 40), (20)
+	(2402 - 2482 @ 40), (15)
 	(5170 - 5250 @ 80), (20)
 	(5250 - 5330 @ 80), (20), DFS
 	(5490 - 5710 @ 80), (27), DFS
@@ -996,10 +996,7 @@ country UA: DFS-ETSI
 	(57240 - 65880 @ 2160), (40), NO-OUTDOOR
 
 country US: DFS-FCC
-#	(2402 - 2472 @ 40), (30)
-   (2402 - 2416 @ 40), (21)
-   (2417 - 2421 @ 40), (22)
-   (2422 - 2472 @ 40), (30)
+	(2402 - 2472 @ 40), (30)
 	(5170 - 5250 @ 80), (17)
 	(5250 - 5330 @ 80), (23), DFS
 	(5735 - 5835 @ 80), (30)
@@ -1076,3 +1073,4 @@ country ZW: DFS-ETSI
 	(5170 - 5250 @ 80), (20)
 	(5250 - 5330 @ 80), (20), DFS
 	(5490 - 5710 @ 80), (27), DFS
+
