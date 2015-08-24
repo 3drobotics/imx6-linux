@@ -995,8 +995,8 @@ country UA: DFS-ETSI
 	# 60 gHz band channels 1-4, ref: Etsi En 302 567
 	(57240 - 65880 @ 2160), (40), NO-OUTDOOR
 
-country US: DFS-FCC
-	(2402 - 2472 @ 40), (30)
+country US: DFS-JP
+	(2402 - 2482 @ 40), (30)
 	(5170 - 5250 @ 80), (17)
 	(5250 - 5330 @ 80), (23), DFS
 	(5735 - 5835 @ 80), (30)
