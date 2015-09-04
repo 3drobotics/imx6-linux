@@ -1111,7 +1111,21 @@ CONFIG_SCSI_MOD=y
 # CONFIG_FIREWIRE is not set
 # CONFIG_FIREWIRE_NOSY is not set
 # CONFIG_I2O is not set
-# CONFIG_NETDEVICES is not set
+CONFIG_NETDEVICES=y
+CONFIG_NET_CORE=y
+# CONFIG_BONDING is not set
+# CONFIG_DUMMY is not set
+# CONFIG_EQUALIZER is not set
+# CONFIG_MII is not set
+# CONFIG_NET_TEAM is not set
+# CONFIG_MACVLAN is not set
+# CONFIG_VXLAN is not set
+# CONFIG_NETCONSOLE is not set
+# CONFIG_NETPOLL is not set
+# CONFIG_NET_POLL_CONTROLLER is not set
+CONFIG_TUN=m
+# CONFIG_VETH is not set
+# CONFIG_ARCNET is not set
 
 #
 # Input device support
@@ -2959,5 +2973,3 @@ CONFIG_AVERAGE=y
 # CONFIG_CORDIC is not set
 # CONFIG_DDR is not set
 # CONFIG_VIRTUALIZATION is not set
-
-CONFIG_TUN=m
