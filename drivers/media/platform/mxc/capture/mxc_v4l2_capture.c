@@ -1356,21 +1356,34 @@ static int mxc_v4l2_s_param(cam_data *cam, struct v4l2_streamparm *parm)
 	csi_param.mclk = 0;
 
 	pr_debug("   clock_curr=mclk=%d\n", ifparm.u.bt656.clock_curr);
-	if (ifparm.u.bt656.clock_curr == 0)
-		csi_param.clk_mode = IPU_CSI_CLK_MODE_CCIR656_INTERLACED;
-	else
-		csi_param.clk_mode = IPU_CSI_CLK_MODE_GATED_CLK;
+  if(ifparm.if_type == V4L2_IF_TYPE_BT1120_PROGRESSIVE_SDR) {
+      csi_param.clk_mode = IPU_CSI_CLK_MODE_CCIR1120_PROGRESSIVE_SDR;
+      csi_param.data_width = IPU_CSI_DATA_WIDTH_8;
+  }
+  else
+  {
+      if (ifparm.u.bt656.clock_curr == 0)
+      {
+          csi_param.clk_mode = IPU_CSI_CLK_MODE_CCIR656_INTERLACED;
+          /*protocol bt656 use 27Mhz pixel clock */
+          csi_param.mclk = 27000000;
+      }
+      else if (ifparm.u.bt656.clock_curr == 1)
+          csi_param.clk_mode = IPU_CSI_CLK_MODE_CCIR656_PROGRESSIVE;
+      else
+          csi_param.clk_mode = IPU_CSI_CLK_MODE_GATED_CLK;
 
-	csi_param.pixclk_pol = ifparm.u.bt656.latch_clk_inv;
+      csi_param.pixclk_pol = ifparm.u.bt656.latch_clk_inv;
 
-	if (ifparm.u.bt656.mode == V4L2_IF_TYPE_BT656_MODE_NOBT_8BIT) {
-		csi_param.data_width = IPU_CSI_DATA_WIDTH_8;
-	} else if (ifparm.u.bt656.mode
-				== V4L2_IF_TYPE_BT656_MODE_NOBT_10BIT) {
-		csi_param.data_width = IPU_CSI_DATA_WIDTH_10;
-	} else {
-		csi_param.data_width = IPU_CSI_DATA_WIDTH_8;
-	}
+      if (ifparm.u.bt656.mode == V4L2_IF_TYPE_BT656_MODE_NOBT_8BIT) {
+            csi_param.data_width = IPU_CSI_DATA_WIDTH_8;
+      } else if (ifparm.u.bt656.mode
+          == V4L2_IF_TYPE_BT656_MODE_NOBT_10BIT) {
+          csi_param.data_width = IPU_CSI_DATA_WIDTH_10;
+      } else {
+          csi_param.data_width = IPU_CSI_DATA_WIDTH_8;
+      }
+  }
 
 	csi_param.Vsync_pol = ifparm.u.bt656.nobt_vs_inv;
 	csi_param.Hsync_pol = ifparm.u.bt656.nobt_hs_inv;
