@@ -378,6 +378,36 @@ static int ioctl_enum_framesizes(struct v4l2_int_device *s,
 }
 
 /*!
+ * ioctl_enum_frameintervals - V4L2 sensor interface handler for
+ *                            VIDIOC_ENUM_FRAMEINTERVALS ioctl
+ * @s: pointer to standard V4L2 device structure
+ * @fival: standard V4L2 VIDIOC_ENUM_FRAMEINTERVALS ioctl structure
+ *
+ * Return 0 if successful, otherwise -EINVAL.
+ */
+static int ioctl_enum_frameintervals(struct v4l2_int_device *s,
+    struct v4l2_frmivalenum *fival)
+{
+  adv7610_vidout_fmt_t fmt;
+
+  if (fival->index != 0)
+    return -EINVAL;
+    
+  if (adv7610_get_vidout_fmt(&fmt))
+    return -ENODEV;
+
+  if (fival->width  == fmt.width &&
+      fival->height == fmt.height) {
+    fival->type = V4L2_FRMIVAL_TYPE_DISCRETE;
+    fival->discrete.numerator = 1;
+    fival->discrete.denominator = fmt.fps;
+    return 0;
+  }
+
+  return -EINVAL;
+}
+
+/*!
  * ioctl_g_chip_ident - V4L2 sensor interface handler for
  *			VIDIOC_DBG_G_CHIP_IDENT ioctl
  * @s: pointer to standard V4L2 device structure
@@ -413,6 +443,8 @@ static struct v4l2_int_ioctl_desc adv7610_ioctl_desc[] = {
 	{vidioc_int_s_parm_num, (v4l2_int_ioctl_func*)ioctl_s_parm},
 	{vidioc_int_enum_framesizes_num,
 				(v4l2_int_ioctl_func *) ioctl_enum_framesizes},
+  {vidioc_int_enum_frameintervals_num,
+    (v4l2_int_ioctl_func *) ioctl_enum_frameintervals},
 	{vidioc_int_g_chip_ident_num,
 				(v4l2_int_ioctl_func *)ioctl_g_chip_ident},
 };
