@@ -757,6 +757,7 @@ struct ath_softc {
     struct sk_buff *tx99_skb;
     bool tx99_state;
     s16 tx99_power;
+    s16 tx99_rateidx;
 
 	int scanning;
 

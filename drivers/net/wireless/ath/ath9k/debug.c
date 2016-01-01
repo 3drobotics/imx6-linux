@@ -2124,6 +2124,45 @@ static const struct file_operations fops_tx99_power = {
     .llseek = default_llseek,
 };
 
+static ssize_t read_file_tx99_rateidx(struct file *file,
+        char __user *user_buf,
+        size_t count, loff_t *ppos)
+{
+    struct ath_softc *sc = file->private_data;
+    char buf[32];
+    unsigned int len;
+
+    len = sprintf(buf, "%d\n",
+            sc->tx99_rateidx);
+
+    return simple_read_from_buffer(user_buf, count, ppos, buf, len);
+}
+
+static ssize_t write_file_tx99_rateidx(struct file *file,
+        const char __user *user_buf,
+        size_t count, loff_t *ppos)
+{
+    struct ath_softc *sc = file->private_data;
+    int r;
+    u8 tx_rateidx;
+
+    r = kstrtou8_from_user(user_buf, count, 0, &tx_rateidx);
+    if (r)
+        return r;
+
+    sc->tx99_rateidx = tx_rateidx;
+
+    return count;
+}
+
+static const struct file_operations fops_tx99_rateidx = {
+    .read = read_file_tx99_rateidx,
+    .write = write_file_tx99_rateidx,
+    .open = simple_open,
+    .owner = THIS_MODULE,
+    .llseek = default_llseek,
+};
+
 int ath9k_init_debug(struct ath_hw *ah)
 {
 	struct ath_common *common = ath9k_hw_common(ah);
@@ -2226,6 +2265,9 @@ int ath9k_init_debug(struct ath_hw *ah)
         debugfs_create_file("tx99_power", S_IRUSR | S_IWUSR,
                 sc->debug.debugfs_phy, sc,
                 &fops_tx99_power);
+        debugfs_create_file("tx99_rateidx", S_IRUSR | S_IWUSR,
+                sc->debug.debugfs_phy, sc,
+                &fops_tx99_rateidx);
     }
 	
     return 0;

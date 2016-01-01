@@ -2467,6 +2467,7 @@ int ath9k_tx99_send(struct ath_softc *sc, struct sk_buff *skb,
     }
 
     ath_set_rates(sc->tx99_vif, NULL, bf);
+    bf->rates[0].idx = sc->tx99_rateidx;
 
     for(i=0; i<ARRAY_SIZE(bf->rates); ++i)
       ath_dbg(common, XMIT, "tx99 rates: 0x%02X\n", bf->rates[i]);
