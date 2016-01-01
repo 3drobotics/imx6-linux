@@ -2440,6 +2440,7 @@ int ath9k_tx99_send(struct ath_softc *sc, struct sk_buff *skb,
     struct ath_common *common = ath9k_hw_common(sc->sc_ah);
     struct ath_buf *bf;
     int padpos, padsize;
+    int i;
 
     padpos = ieee80211_hdrlen(hdr->frame_control);
     padsize = padpos & 3;
@@ -2467,9 +2468,8 @@ int ath9k_tx99_send(struct ath_softc *sc, struct sk_buff *skb,
 
     ath_set_rates(sc->tx99_vif, NULL, bf);
 
-    int i;
-    for(i=0; i<ARRAY_SIZE(bf->rates), ++i)
-      ath_debug(common, XMIT, "tx99 rates: 0x%02X\n", bf->rates[i]);
+    for(i=0; i<ARRAY_SIZE(bf->rates); ++i)
+      ath_dbg(common, XMIT, "tx99 rates: 0x%02X\n", bf->rates[i]);
 
     ath9k_hw_set_desc_link(sc->sc_ah, bf->bf_desc, bf->bf_daddr);
     ath9k_hw_tx99_start(sc->sc_ah, txctl->txq->axq_qnum);
