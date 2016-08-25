@@ -329,6 +329,7 @@ static void imx_stop_tx(struct uart_port *port)
 	temp = readl(port->membase + UCR1);
 	writel(temp & ~UCR1_TXMPTYEN, port->membase + UCR1);
 
+#if 0
 	/* in rs485 mode disable transmitter if shifter is empty */
 	if (port->rs485.flags & SER_RS485_ENABLED &&
 	    readl(port->membase + USR2) & USR2_TXDC) {
@@ -343,6 +344,7 @@ static void imx_stop_tx(struct uart_port *port)
 		temp &= ~UCR4_TCEN;
 		writel(temp, port->membase + UCR4);
 	}
+#endif
 }
 
 /*
@@ -536,6 +538,7 @@ static void imx_start_tx(struct uart_port *port)
 	struct imx_port *sport = (struct imx_port *)port;
 	unsigned long temp;
 
+#if 0
 	if (port->rs485.flags & SER_RS485_ENABLED) {
 		/* enable transmitter and shifter empty irq */
 		temp = readl(port->membase + UCR2);
@@ -549,6 +552,7 @@ static void imx_start_tx(struct uart_port *port)
 		temp |= UCR4_TCEN;
 		writel(temp, port->membase + UCR4);
 	}
+#endif
 
 	if (!sport->dma_is_enabled) {
 		temp = readl(sport->port.membase + UCR1);
@@ -784,6 +788,7 @@ static void imx_set_mctrl(struct uart_port *port, unsigned int mctrl)
 	struct imx_port *sport = (struct imx_port *)port;
 	unsigned long temp;
 
+#if 0
 	if (!(port->rs485.flags & SER_RS485_ENABLED)) {
 		temp = readl(sport->port.membase + UCR2);
 		temp &= ~(UCR2_CTS | UCR2_CTSC);
@@ -791,6 +796,7 @@ static void imx_set_mctrl(struct uart_port *port, unsigned int mctrl)
 			temp |= UCR2_CTS | UCR2_CTSC;
 		writel(temp, sport->port.membase + UCR2);
 	}
+#endif
 
 	temp = readl(sport->port.membase + UCR3) & ~UCR3_DSR;
 	if (!(mctrl & TIOCM_DTR))
@@ -1320,6 +1326,7 @@ imx_set_termios(struct uart_port *port, struct ktermios *termios,
 		if (sport->have_rtscts) {
 			ucr2 &= ~UCR2_IRTS;
 
+#if 0
 			if (port->rs485.flags & SER_RS485_ENABLED) {
 				/*
 				 * RTS is mandatory for rs485 operation, so keep
@@ -1332,13 +1339,19 @@ imx_set_termios(struct uart_port *port, struct ktermios *termios,
 			} else {
 				ucr2 |= UCR2_CTSC;
 			}
+#else
+			ucr2 |= UCR2_CTSC;
+#endif
 		} else {
 			termios->c_cflag &= ~CRTSCTS;
 		}
-	} else if (port->rs485.flags & SER_RS485_ENABLED)
+	}
+#if 0
+		else if (port->rs485.flags & SER_RS485_ENABLED)
 		/* disable transmitter */
 		if (!(port->rs485.flags & SER_RS485_RTS_AFTER_SEND))
 			ucr2 |= UCR2_CTS;
+#endif
 
 	if (termios->c_cflag & CSTOPB)
 		ucr2 |= UCR2_STPB;
@@ -1560,6 +1573,7 @@ static void imx_poll_put_char(struct uart_port *port, unsigned char c)
 }
 #endif
 
+#if 0
 static int imx_rs485_config(struct uart_port *port,
 			    struct serial_rs485 *rs485conf)
 {
@@ -1591,6 +1605,7 @@ static int imx_rs485_config(struct uart_port *port,
 
 	return 0;
 }
+#endif
 
 static struct uart_ops imx_pops = {
 	.tx_empty	= imx_tx_empty,
@@ -1814,6 +1829,7 @@ static struct console imx_console = {
 
 #define IMX_CONSOLE	&imx_console
 
+#if 0
 #ifdef CONFIG_OF
 static void imx_console_early_putchar(struct uart_port *port, int ch)
 {
@@ -1844,6 +1860,7 @@ imx_console_early_setup(struct earlycon_device *dev, const char *opt)
 OF_EARLYCON_DECLARE(ec_imx6q, "fsl,imx6q-uart", imx_console_early_setup);
 OF_EARLYCON_DECLARE(ec_imx21, "fsl,imx21-uart", imx_console_early_setup);
 #endif
+#endif
 
 #else
 #define IMX_CONSOLE	NULL
@@ -1860,6 +1877,19 @@ static struct uart_driver imx_reg = {
 };
 
 #ifdef CONFIG_OF
+
+// backported
+static const void *of_device_get_match_data(const struct device *dev)
+{
+	const struct of_device_id *match;
+
+	match = of_match_device(dev->driver->of_match_table, dev);
+	if (!match)
+		return NULL;
+
+	return match->data;
+}
+
 /*
  * This function returns 1 iff pdev isn't a device instatiated by dt, 0 iff it
  * could successfully get all information from dt or a negative errno.
@@ -1948,9 +1978,11 @@ static int serial_imx_probe(struct platform_device *pdev)
 	sport->port.irq = rxirq;
 	sport->port.fifosize = 32;
 	sport->port.ops = &imx_pops;
+#if 0
 	sport->port.rs485_config = imx_rs485_config;
 	sport->port.rs485.flags =
 		SER_RS485_RTS_ON_SEND | SER_RS485_RX_DURING_TX;
+#endif
 	sport->port.flags = UPF_BOOT_AUTOCONF;
 	init_timer(&sport->timer);
 	sport->timer.function = imx_timeout;
