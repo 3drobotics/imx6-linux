@@ -587,7 +587,9 @@ static irqreturn_t imx_rtsint(int irq, void *dev_id)
 
 	writel(USR1_RTSD, sport->port.membase + USR1);
 	val = readl(sport->port.membase + USR1) & USR1_RTSS;
+#if 0
 	uart_handle_cts_change(&sport->port, !!val);
+#endif
 	wake_up_interruptible(&sport->port.state->port.delta_msr_wait);
 
 	spin_unlock_irqrestore(&sport->port.lock, flags);
